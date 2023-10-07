@@ -44,15 +44,28 @@ public class AuthenticationService {
                 build();
 
 
+        //assigning to only single role
+        /*
         Role role = roleRepository.findByName("USER").
                 orElseThrow(()->new Exception("role USER cannot be fetched from DB"));
         Set<Role> userRoles = new HashSet<>();
         userRoles.add(role);
 
+
         //user.setRoles(Collections.singleton(role));
         user.setRoles(userRoles);
-
         System.out.println("new user assigned role: " + role);
+
+        */
+
+        // Fetch and assign roles
+        Set<Role> roles = new HashSet<>();
+        for(String roleName : registrationDto.getRoles()) {
+            Role role = roleRepository.findByName(roleName)
+                    .orElseThrow(() -> new Exception("Role not found: " + roleName));
+            roles.add(role);
+        }
+        user.setRoles(roles);
 
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);
