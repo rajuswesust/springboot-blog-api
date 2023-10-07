@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final RoleRepository roleRepository;
 
-    public AuthenticationResponse register(RegistrationDto registrationDto) {
+    public AuthenticationResponse register(RegistrationDto registrationDto) throws Exception {
 
         //check if user exists in DB
         if(userRepository.existsByUsernameOrEmail(registrationDto.getUsername(), registrationDto.getEmail())) {
@@ -41,8 +43,15 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(registrationDto.getPassword())).
                 build();
 
-        Role role = roleRepository.findByName(String.valueOf(registrationDto.getRole())).get();
-        user.setRoles(Collections.singleton(role));
+
+        Role role = roleRepository.findByName("USER").
+                orElseThrow(()->new Exception("role USER cannot be fetched from DB"));
+        Set<Role> userRoles = new HashSet<>();
+        userRoles.add(role);
+
+        //user.setRoles(Collections.singleton(role));
+        user.setRoles(userRoles);
+
         System.out.println("new user assigned role: " + role);
 
         userRepository.save(user);
@@ -55,6 +64,7 @@ public class AuthenticationService {
                 loginDto.getPassword()));
         var user = userRepository.findByUsername(loginDto.getUsername()).orElseThrow();
         var jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return AuthenticationResponse.builder().token(jwtToken).message(HttpStatus.OK.getReasonPhrase()).
+                statusCode(HttpStatus.OK.value()).build();
     }
 }
