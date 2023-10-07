@@ -1,10 +1,15 @@
 package com.spring.boot.blog.app.config;
 
 import com.spring.boot.blog.app.entity.User;
+import com.spring.boot.blog.app.exception.BlogApiException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +33,8 @@ public class JwtService {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
+
+    //
     private Claims extractAllClaims(String token) {
         return Jwts.parser().verifyWith(getSignInKey()).build().parseClaimsJws(token).getPayload();
     }
@@ -56,7 +63,6 @@ public class JwtService {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
-
     public Boolean isTokenValid(String token, UserDetails userDetails) {
         String username = extractUsername(token);
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
@@ -68,5 +74,24 @@ public class JwtService {
 
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
+    }
+
+    private boolean validateToken(String token) {
+        try {
+            Jwts.parser().setSigningKey(getSignInKey()).build().parseClaimsJws(token);
+            return true;
+        } catch (SignatureException ex) {
+            throw new BlogApiException(HttpStatus.BAD_REQUEST, "Invalid JWT sequence");
+        } catch (MalformedJwtException ex) {
+            throw new BlogApiException(HttpStatus.BAD_REQUEST, "Invalid JWT token");
+        } catch (ExpiredJwtException ex) {
+            throw new BlogApiException(HttpStatus.BAD_REQUEST, "Expired JWT token");
+        } catch (BlogApiException ex) {
+            throw new BlogApiException(HttpStatus.BAD_REQUEST, "Unsupported JWT");
+        } catch (IllegalArgumentException ex) {
+            throw new BlogApiException(HttpStatus.BAD_REQUEST, "JWT claims string is empty");
+        }
+
+
     }
 }

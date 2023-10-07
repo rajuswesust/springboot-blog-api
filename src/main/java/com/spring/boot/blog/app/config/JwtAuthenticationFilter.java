@@ -1,5 +1,6 @@
 package com.spring.boot.blog.app.config;
 
+import com.spring.boot.blog.app.security.CustomUserDetailsService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,8 +21,15 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    //get JWT from HTTP request
+    //validate token
+    //get username from token
+    //load user associated with token
+    //set spring security
+
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    //private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -41,7 +49,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             System.out.println("JwtAutheticationFilter: " + username + "\n" + jwt + "\n");
 
             if(username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                //UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+                UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(username);
                 if(jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails,

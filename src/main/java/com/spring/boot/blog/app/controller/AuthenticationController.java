@@ -1,8 +1,8 @@
 package com.spring.boot.blog.app.controller;
 
-import com.spring.boot.blog.app.payload.auth.AuthDto;
+import com.spring.boot.blog.app.payload.auth.LoginDto;
 import com.spring.boot.blog.app.payload.auth.AuthenticationResponse;
-import com.spring.boot.blog.app.payload.auth.RegisterDto;
+import com.spring.boot.blog.app.payload.auth.RegistrationDto;
 import com.spring.boot.blog.app.service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,14 +21,16 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterDto registerDto) {
-        System.out.println("Registration Req: " + registerDto);
-        return ResponseEntity.ok(authenticationService.register(registerDto));
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegistrationDto registrationDto) {
+        System.out.println("Registration Req: " + registrationDto);
+        AuthenticationResponse result = authenticationService.register(registrationDto);
+        System.out.println("registration response : " + result);
+        return ResponseEntity.status(result.getStatusCode()).body(result);
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthDto authDto) {
-        System.out.println("Authentication Req: " + authDto);
-        return ResponseEntity.ok(authenticationService.authenticate(authDto));
+    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody LoginDto loginDto) {
+        System.out.println("Authentication Req: " + loginDto);
+        return ResponseEntity.ok(authenticationService.authenticate(loginDto));
     }
 }

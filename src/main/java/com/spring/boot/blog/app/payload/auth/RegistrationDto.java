@@ -1,5 +1,6 @@
 package com.spring.boot.blog.app.payload.auth;
 
+import com.spring.boot.blog.app.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,9 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RegisterDto {
+public class RegistrationDto {
     private String name;
     private String email;
     private String username;
     private String password;
+    private Role role;
 }
