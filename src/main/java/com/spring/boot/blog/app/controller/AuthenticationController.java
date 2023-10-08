@@ -4,11 +4,15 @@ import com.spring.boot.blog.app.payload.auth.LoginDto;
 import com.spring.boot.blog.app.payload.auth.AuthenticationResponse;
 import com.spring.boot.blog.app.payload.auth.RegistrationDto;
 import com.spring.boot.blog.app.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,5 +37,13 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody LoginDto loginDto) {
         System.out.println("Authentication Req: " + loginDto);
         return ResponseEntity.ok(authenticationService.authenticate(loginDto));
+    }
+
+    @PostMapping("/refresh-token")
+    public void refreshToken(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
+            throws IOException {
+
+        System.out.println("refresh token req..." );
+        authenticationService.refreshToken(httpServletRequest, httpServletResponse);
     }
 }
