@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Set;
 
@@ -18,4 +19,6 @@ public class RegistrationDto {
     private String username;
     private String password;
     private Set<String> roles;
+
+    private boolean isEnabled;
 }
