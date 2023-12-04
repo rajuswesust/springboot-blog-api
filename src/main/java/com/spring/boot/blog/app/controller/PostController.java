@@ -1,23 +1,43 @@
 package com.spring.boot.blog.app.controller;
 
+import com.spring.boot.blog.app.entity.Post;
 import com.spring.boot.blog.app.payload.PostDto;
 import com.spring.boot.blog.app.payload.PostResponse;
+import com.spring.boot.blog.app.service.FileService;
 import com.spring.boot.blog.app.service.PostService;
 import com.spring.boot.blog.app.utils.AppConstants;
+import com.spring.boot.blog.app.utils.FileUpload;
+import jakarta.mail.Multipart;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/posts")
 public class PostController {
 
     private PostService postService;
-    public PostController(PostService postService) {
+    private FileService fileService;
+    @Value("${project.images}")
+    private String path;
+    @Autowired
+    private FileUpload fileUpload;
+    public PostController(PostService postService, FileService fileService) {
         this.postService = postService;
+        this.fileService = fileService;
     }
 
     @GetMapping
@@ -71,5 +91,55 @@ public class PostController {
         postService.deleteById(postId);
         return new ResponseEntity<>("Post is deleted successfully", HttpStatus.OK);
     }
+
+    @PostMapping("/photo")
+    public ResponseEntity<?> uploadPhoto(@RequestParam("file")MultipartFile file) {
+
+        System.out.println(file.getOriginalFilename());
+        System.out.println(file.getSize());
+        System.out.println(file.getContentType());
+        System.out.println(file.getName());
+
+        try {
+            if(file.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No Photo Found!");
+            }
+            boolean bal = fileUpload.upload(file);
+            if(bal)
+                return ResponseEntity.ok(ServletUriComponentsBuilder.fromCurrentContextPath().path("/image/").path(Objects.requireNonNull(file.getOriginalFilename())).toUriString());
+            else
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("something went wrong!");
+    }
+
+
+    @PostMapping("/image/upload/{postId}")
+    public ResponseEntity<PostDto> uploadPostImage(@RequestParam("image") MultipartFile image,
+                                                   @PathVariable(name = "postId") Long postId) throws IOException {
+
+        PostDto postDto = postService.getPost(postId);
+
+        String fileName = fileService.uploadImage(path, image);
+        postDto.setBannerImageName(fileName);
+        PostDto updatePost = postService.updatePost(postId, postDto);
+        return new ResponseEntity<>(updatePost, HttpStatus.OK);
+    }
+
+
+    @GetMapping(value = "/image/{imageName}",produces = MediaType.IMAGE_JPEG_VALUE)
+    public void downloadImage(
+            @PathVariable("imageName") String imageName,
+            HttpServletResponse response
+    ) throws IOException {
+
+        InputStream resource = this.fileService.getResource(path, imageName);
+        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+        StreamUtils.copy(resource,response.getOutputStream());
+    }
+
 
 }

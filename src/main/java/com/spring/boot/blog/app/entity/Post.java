@@ -29,6 +29,8 @@ public class Post  {
     @Column(name="content", nullable = false, length = 1000)
     private String content;
 
+    private String bannerImageName;
+
     //bidirectional
     @JsonIgnore
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL,
