@@ -18,6 +18,7 @@ public class RegistrationDto {
     private String email;
     private String username;
     private String password;
+    private String confirmPassword;
     private Set<String> roles;
 
     private boolean isEnabled;

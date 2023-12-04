@@ -10,6 +10,8 @@ public interface PostService {
 
   PostResponse getAllPosts(int pageNo, int pageSize, String sortBy, String sortDir);
 
+  List<PostDto> getPostsByUser(Long userId);
+
     PostDto getPost(Long id);
 
     PostDto updatePost(Long postId, PostDto postDto);

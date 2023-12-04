@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/posts")
+@RequestMapping("/api/v1/posts")
 public class PostController {
 
     private PostService postService;
@@ -35,12 +35,25 @@ public class PostController {
         return new ResponseEntity<>(postService.createPost(postDto), HttpStatus.CREATED);
     }
 
+//    @PostMapping
+//    public ResponseEntity<?> createPost(@RequestBody()  String username) {
+//        return new ResponseEntity<>("ok", HttpStatus.CREATED);
+//    }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<PostDto> getPostById(@PathVariable(name = "id") Long postId) {
         System.out.println("get post by id: " + postId);
         System.out.println("-->" +  postService.getPost(postId));
         return ResponseEntity.ok(postService.getPost(postId));
+    }
+
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<PostDto>> getPostsByUser(@PathVariable(name = "userId") Long userId) {
+        System.out.println("get post by user id: " + userId);
+        System.out.println("-->" +  postService.getPostsByUser(userId));
+        return ResponseEntity.ok(postService.getPostsByUser(userId));
     }
 
     @PutMapping("/{id}")

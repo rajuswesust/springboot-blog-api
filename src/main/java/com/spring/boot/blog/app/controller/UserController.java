@@ -2,6 +2,7 @@ package com.spring.boot.blog.app.controller;
 
 import com.spring.boot.blog.app.entity.User;
 import com.spring.boot.blog.app.payload.HttpResponse;
+import com.spring.boot.blog.app.payload.UserDto;
 import com.spring.boot.blog.app.payload.auth.RegistrationDto;
 import com.spring.boot.blog.app.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,12 @@ public class UserController {
                         .statusCode(HttpStatus.OK.value())
                         .build()
         );
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDto> getUser(@PathVariable(name = "id") Long id) {
+
+        return ResponseEntity.ok(userService.getUser(id));
     }
 
 }

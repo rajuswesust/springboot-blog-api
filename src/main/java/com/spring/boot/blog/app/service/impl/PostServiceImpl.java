@@ -1,16 +1,24 @@
 package com.spring.boot.blog.app.service.impl;
 
+import com.spring.boot.blog.app.entity.Category;
 import com.spring.boot.blog.app.entity.Post;
+import com.spring.boot.blog.app.entity.User;
 import com.spring.boot.blog.app.exception.ResourceNotFoundException;
 import com.spring.boot.blog.app.payload.PostDto;
 import com.spring.boot.blog.app.payload.PostResponse;
+import com.spring.boot.blog.app.repository.CategoryRepository;
 import com.spring.boot.blog.app.repository.PostRepository;
+import com.spring.boot.blog.app.repository.UserRepository;
 import com.spring.boot.blog.app.service.PostService;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.awt.print.Pageable;
 import java.util.ArrayList;
@@ -20,17 +28,39 @@ import java.util.stream.Collectors;
 @Service
 public class PostServiceImpl implements PostService {
     private PostRepository postRepository;
+    private UserRepository userRepository;
+    private CategoryRepository categoryRepository;
     private ModelMapper modelMapper;
 
-    public PostServiceImpl(PostRepository postRepository, ModelMapper modelMapper) {
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
+                           CategoryRepository categoryRepository,
+                           ModelMapper modelMapper) {
+        this.categoryRepository = categoryRepository;
         this.postRepository = postRepository;
+        this.userRepository = userRepository;
         this.modelMapper = modelMapper;
     }
 
     @Override
     public PostDto createPost(PostDto postDto) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName(); // Retrieve authenticated user's username
+
+        // Your logic here using the current authenticated username...
+        System.out.println("Authenticated user: " + currentUsername);
+
+        User user = userRepository.findByUsername(currentUsername).orElseThrow(
+                ()->new ResponseStatusException(HttpStatus.NOT_FOUND, "User does not exists"));
+
+        Category category = categoryRepository.findById(postDto.getCategoryId()).orElseThrow(
+                ()->new ResponseStatusException(HttpStatus.NOT_FOUND, "category does not exists"));
+
+        System.out.println("content length: "+ postDto.getContent().length());
         System.out.println("#"+postDto);
         Post post = mapToEntity(postDto);
+        post.setUser(user);
+        post.setCategory(category);
         System.out.println("->"+post);
 
         Post newPost = postRepository.save(post);
@@ -101,7 +131,19 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostDto getPost(Long id) {
        Post post =  postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post", "id", id));
+       System.out.println(post);
+
        return mapToDto(post);
+    }
+
+    public List<PostDto> getPostsByUser(Long userId) {
+        User user = userRepository.findById(userId).
+                orElseThrow(() -> new ResourceNotFoundException("User ", "userId ", userId));
+        List<Post> postsByUser = postRepository.findByUser(user);
+
+        List<PostDto> responsePosts = postsByUser.stream().map((post) -> this.modelMapper.map(post, PostDto.class))
+                .toList();
+        return responsePosts;
     }
 
     @Override

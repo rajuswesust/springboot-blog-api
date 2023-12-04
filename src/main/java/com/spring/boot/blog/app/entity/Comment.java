@@ -1,12 +1,11 @@
 package com.spring.boot.blog.app.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "comments")
@@ -19,7 +18,7 @@ public class Comment {
     private String email;
     private  String body;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) //default would be Eager
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 }

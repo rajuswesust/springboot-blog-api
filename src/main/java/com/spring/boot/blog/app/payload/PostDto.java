@@ -1,9 +1,14 @@
 package com.spring.boot.blog.app.payload;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.spring.boot.blog.app.entity.Category;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.Set;
 
 //@NotEmpty @Size @NotNull etc are for validation
@@ -20,12 +25,20 @@ public class PostDto {
     @Size(min = 2, message = "post title should be at least 2 characters")
     private String title;
 
-    @NotEmpty
-    @Size(min = 5, message = "post title should be at least 5 characters")
+//    @NotEmpty
+//    @Size(min = 0, message = "post title should be at least 5 characters")
     private String description;
 
     @NotEmpty
     private String content;
 
-    private Set<CommentDto> comments;
+    private List<CommentDto> comments;
+
+    @NotNull
+    private Long categoryId;
+
+    private String categoryName;
+
+    private UserDto user;
+
 }

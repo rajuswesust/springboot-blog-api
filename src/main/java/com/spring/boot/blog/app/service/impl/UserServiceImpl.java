@@ -4,6 +4,7 @@ import com.spring.boot.blog.app.entity.Confirmation;
 import com.spring.boot.blog.app.entity.Post;
 import com.spring.boot.blog.app.entity.User;
 import com.spring.boot.blog.app.payload.PostDto;
+import com.spring.boot.blog.app.payload.UserDto;
 import com.spring.boot.blog.app.payload.auth.RegistrationDto;
 import com.spring.boot.blog.app.repository.ConfirmationRepository;
 import com.spring.boot.blog.app.repository.UserRepository;
@@ -11,7 +12,9 @@ import com.spring.boot.blog.app.service.EmailService;
 import com.spring.boot.blog.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -59,6 +62,17 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         //confirmationRepository.delete(confirmation);
         return true;
+    }
+
+    @Override
+    public UserDto getUser(Long id) {
+        User user = userRepository.findById(id).orElseThrow(
+                ()->  new ResponseStatusException(HttpStatus.NOT_FOUND, "User Not Found!")
+        );
+
+
+        UserDto userDto = modelMapper.map(user, UserDto.class);
+        return userDto;
     }
 
     private User mapToEntity(RegistrationDto registrationDto) {
